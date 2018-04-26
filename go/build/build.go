@@ -19,6 +19,7 @@ var (
 	TargetWindows386   = PackageTarget{"windows", "386"}
 	TargetWindowsAmd64 = PackageTarget{"windows", "amd64"}
 	TargetDarwinAmd64  = PackageTarget{"darwin", "amd64"}
+	TargetLocal        = PackageTarget{"", ""}
 
 	DefaultPackageTargets = []PackageTarget{
 		TargetLinux386,
@@ -66,9 +67,15 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 	var outDir string
 
 	env := map[string]string{
-		"GOOS":        t.OS,
-		"GOARCH":      t.Arch,
 		"CGO_ENABLED": "0",
+	}
+
+	if t.OS != "" {
+		env["GOOS"] = t.OS
+	}
+
+	if t.Arch != "" {
+		env["GOARCH"] = t.Arch
 	}
 
 	if pkg.OutDir != "" {
