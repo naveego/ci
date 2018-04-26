@@ -75,6 +75,6 @@ func GitPushToRemote(remote, target string) error {
 	return sh.Run("git", "push", remote, target)
 }
 
-func GetPush(target string) error {
+func GitPush(target string) error {
 	return GitPushToRemote("origin", target)
 }
