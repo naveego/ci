@@ -66,3 +66,11 @@ func OnMasterBranch() bool {
 	}
 	return branch == "master"
 }
+
+func GitTag(tag, msg string) error {
+	return sh.Run("git", "tag", tag, "-m", msg)
+}
+
+func GitPushToRemote(remote, target string) error {
+	return sh.Run("git", "push", remote, target)
+}
