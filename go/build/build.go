@@ -84,7 +84,12 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 		outDir = DefaultOutDir
 	}
 
-	pkgName := fmt.Sprintf("%s_%s_%s_%s", pkg.Name, pkg.Version, t.OS, t.Arch)
+	var pkgName string
+	if t.OS == "" && t.Arch == "" {
+		pkgName = pkg.Name
+	} else {
+		pkgName = fmt.Sprintf("%s_%s_%s_%s", pkg.Name, pkg.Version, t.OS, t.Arch)
+	}
 
 	if t.OS == "windows" {
 		pkgName = pkgName + ".exe"
