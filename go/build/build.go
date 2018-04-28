@@ -3,7 +3,9 @@ package build
 import (
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/magefile/mage/sh"
 )
@@ -27,16 +29,83 @@ var (
 		TargetWindows386,
 		TargetWindowsAmd64,
 	}
+
+	ReleaserTemplate *template.Template
+
+	releaserConfig = `
+# .goreleaser.yml
+builds:
+  - main: {{.Main}}
+    binary: {{.Name}}
+    goos:
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+    ldflags: '-s -w -X "{{.PackagePath}}/version.VersionDev=Build.{{ "{{" }}.Env.BUILD_NUMBER{{ "}}" }}"'
+    env:
+      - CGO_ENABLED=0
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    binary: {{.Name}}
+    image: {{.DockerRepo}}/{{.Name}}
+    tag_templates:
+    - "{{ "{{" }} .Tag {{ "}}" }}
+
+# Archive customization
+archive:
+  format: tar.gz
+  format_overrides:
+	- goos: windows
+	  format: zip
+  wrap_in_directory: true
+  replacements:
+    darwin: macOS
+`
 )
+
+func init() {
+	ReleaserTemplate = template.Must(template.New("releaser").Parse(releaserConfig))
+}
 
 // Package provides information for building a binary image
 type Package struct {
-	Name       string
-	Version    string
-	CommitHash string
-	OutDir     string
-	Path       string // The path to .go files to build
-	BuildArgs  []string
+	Name        string
+	Version     string
+	CommitHash  string
+	PackagePath string
+	OutDir      string
+	DockerRepo  string
+	Main        string // The path to main.go or build dir
+	BuildArgs   []string
+}
+
+// NewPackage creates a new package with default values configured.
+// The default values set by this operation are:
+//		PackagePath: "github.com/naveegoinc/{name}"
+//		OutDir: 	 "./bin"
+//		DockerRepo:	 "docker.naveego.com:4333"
+//		Main: 		 "main.go"
+// Given the variables name="helloworld" and version="v1.0.0", the
+// return package would have the following values:
+//		Name:		 "helloworld"
+//		Version:	 "v1.0.0"
+//		PackagePath: "github.com/naveegoinc/helloworld"
+//		OutDir:		 "./bin"
+//		DockerRepo:	 "docker.naveego.com:4333"
+//		Main:		 "main.go"
+func NewPackage(name, version string) Package {
+	return Package{
+		Name:        name,
+		Version:     version,
+		PackagePath: "github.com/naveegoinc/" + name,
+		OutDir:      "./bin",
+		DockerRepo:  "docker.naveego.com:4333",
+		Main:        "main.go",
+	}
 }
 
 // PackageTarget defines
@@ -112,4 +181,37 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 	log.Printf("Building Package %s ...\n", pkgName)
 	err := sh.RunWith(env, "go", buildArgs...)
 	return outFile, err
+}
+
+// Release executes a gorelease operation
+func Release(pkg Package) error {
+	if !RunningOnTeamCity() {
+		return fmt.Errorf("this operation should only be performed in our CI environment")
+	}
+
+	if _, err := os.Stat("./.goreleaser.yml"); os.IsNotExist(err) {
+		log.Info("no goreleaser config found, auto-generating .goreleaser.yml")
+		err = writeConfigFile(pkg)
+		if err != nil {
+			return fmt.Errorf("could not write .goreleaser.yml, %v", err)
+		}
+	}
+
+	// make sure we have goreleaser
+	err := sh.Run("go", "get", "github.com/goreleaser/goreleaser")
+	if err != nil {
+		return fmt.Errorf("could not install goreleaser, %v", err)
+	}
+
+	return sh.Run("goreleaser", "--rm-dist")
+}
+
+func writeConfigFile(pkg Package) error {
+	configFile, err := os.Create("./.goreleaser.yml")
+	if err != nil {
+		return fmt.Errorf("could not create .goreleaser.yml, %v", err)
+	}
+	defer configFile.Close()
+
+	return ReleaserTemplate.Execute(configFile, *pkg)
 }
