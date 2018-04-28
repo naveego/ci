@@ -14,7 +14,7 @@ func Ginkgo(tags []string) error {
 	if err != nil {
 		return fmt.Errorf("Could not install ginkgo, %v", err)
 	}
-	err := sh.Run("go", "get", "github.com/onsi/gomega/...")
+	err = sh.Run("go", "get", "github.com/onsi/gomega/...")
 	if err != nil {
 		return fmt.Errorf("Could not install gomega, %v", err)
 	}
@@ -34,7 +34,7 @@ func Ginkgo(tags []string) error {
 		args = append(args, strings.Join(tags, " "))
 	}
 
-	return sh.Run("ginkgo", args)
+	return sh.Run("ginkgo", args...)
 }
 
 // GinkgoIntegration runs test recusively, but uses integration tag

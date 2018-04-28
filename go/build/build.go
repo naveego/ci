@@ -176,7 +176,7 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 		buildArgs = append(buildArgs, a)
 	}
 
-	buildArgs = append(buildArgs, pkg.Path)
+	buildArgs = append(buildArgs, pkg.Main)
 
 	log.Printf("Building Package %s ...\n", pkgName)
 	err := sh.RunWith(env, "go", buildArgs...)
@@ -190,7 +190,7 @@ func Release(pkg Package) error {
 	}
 
 	if _, err := os.Stat("./.goreleaser.yml"); os.IsNotExist(err) {
-		log.Info("no goreleaser config found, auto-generating .goreleaser.yml")
+		log.Println("no goreleaser config found, auto-generating .goreleaser.yml")
 		err = writeConfigFile(pkg)
 		if err != nil {
 			return fmt.Errorf("could not write .goreleaser.yml, %v", err)
@@ -213,5 +213,5 @@ func writeConfigFile(pkg Package) error {
 	}
 	defer configFile.Close()
 
-	return ReleaserTemplate.Execute(configFile, *pkg)
+	return ReleaserTemplate.Execute(configFile, pkg)
 }
