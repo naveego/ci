@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/coreos/go-semver/semver"
+
 	"github.com/magefile/mage/sh"
 )
 
@@ -53,7 +55,7 @@ dockers:
     binary: {{.Name}}
     image: {{.DockerRepo}}/{{.Name}}
     tag_templates:
-    - "{{ "{{" }} .Tag {{ "}}" }}
+    - "{{ "{{" }} .Tag {{ "}}" }}"
 
 # Archive customization
 archive:
@@ -74,7 +76,7 @@ func init() {
 // Package provides information for building a binary image
 type Package struct {
 	Name        string
-	Version     string
+	Version     semver.Version
 	CommitHash  string
 	PackagePath string
 	OutDir      string
@@ -97,7 +99,7 @@ type Package struct {
 //		OutDir:		 "./bin"
 //		DockerRepo:	 "docker.naveego.com:4333"
 //		Main:		 "main.go"
-func NewPackage(name, version string) Package {
+func NewPackage(name string, version semver.Version) Package {
 	return Package{
 		Name:        name,
 		Version:     version,
@@ -157,7 +159,7 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 	if t.OS == "" && t.Arch == "" {
 		pkgName = pkg.Name
 	} else {
-		pkgName = fmt.Sprintf("%s_%s_%s_%s", pkg.Name, pkg.Version, t.OS, t.Arch)
+		pkgName = fmt.Sprintf("%s_%s_%s_%s", pkg.Name, pkg.Version.String(), t.OS, t.Arch)
 	}
 
 	if t.OS == "windows" {
