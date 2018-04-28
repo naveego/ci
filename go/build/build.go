@@ -61,8 +61,8 @@ dockers:
 archive:
   format: tar.gz
   format_overrides:
-	- goos: windows
-	  format: zip
+    - goos: windows
+      format: zip
   wrap_in_directory: true
   replacements:
     darwin: macOS
