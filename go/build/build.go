@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -191,12 +192,22 @@ func Release(pkg Package) error {
 		return fmt.Errorf("this operation should only be performed in our CI environment")
 	}
 
-	if _, err := os.Stat("./.goreleaser.yml"); os.IsNotExist(err) {
+	configFile = "./.goreleaser.yml"
+
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		log.Println("no goreleaser config found, auto-generating .goreleaser.yml")
-		err = writeConfigFile(pkg)
+		tmpDir, err := ioutil.TempDir("", pkg.Name)
+		if err != nil {
+			return fmt.Errorf("could not create temp directory for goreleaser config, %v", err)
+		}
+		defer os.RemoveAll(tmpDir)
+
+		err = writeConfigFile(tmpDir, pkg)
 		if err != nil {
 			return fmt.Errorf("could not write .goreleaser.yml, %v", err)
 		}
+
+		configFile = filepath.Join(tmpDir, ".goreleaser.yml")
 	}
 
 	// make sure we have goreleaser
@@ -205,11 +216,13 @@ func Release(pkg Package) error {
 		return fmt.Errorf("could not install goreleaser, %v", err)
 	}
 
-	return sh.Run("goreleaser", "--rm-dist")
+	log.Printf("executing goreleaser with config file '%s'\n", configFile)
+	return sh.Run("goreleaser", "--config", configFile, "--rm-dist")
 }
 
-func writeConfigFile(pkg Package) error {
-	configFile, err := os.Create("./.goreleaser.yml")
+func writeConfigFile(tmpDir string, pkg Package) error {
+	cfgPath := filepath.Join(tmpDir, ".goreleaser.yml")
+	configFile, err := os.Create(cfgPath)
 	if err != nil {
 		return fmt.Errorf("could not create .goreleaser.yml, %v", err)
 	}
