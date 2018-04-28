@@ -192,7 +192,7 @@ func Release(pkg Package) error {
 		return fmt.Errorf("this operation should only be performed in our CI environment")
 	}
 
-	configFile = "./.goreleaser.yml"
+	configFile := "./.goreleaser.yml"
 
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		log.Println("no goreleaser config found, auto-generating .goreleaser.yml")
