@@ -46,7 +46,7 @@ builds:
       - darwin
     goarch:
       - amd64
-    ldflags: '-s -w -X "{{.PackagePath}}/version.VersionDev=Build.{{ "{{" }}.Env.BUILD_NUMBER{{ "}}" }}"'
+    ldflags: '-s -w -X "{{.PackagePath}}/version.VersionBuild=Build.{{ "{{" }}.Env.BUILD_NUMBER{{ "}}" }}"'
     env:
       - CGO_ENABLED=0
 
