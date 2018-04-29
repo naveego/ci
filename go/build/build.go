@@ -9,7 +9,6 @@ import (
 	"text/template"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/naveegoinc/auth/version"
 
 	"github.com/magefile/mage/sh"
 )
@@ -137,7 +136,7 @@ func BuildPackages(pkg Package, targets ...PackageTarget) error {
 
 // BuildPackage builds a package and returns the path to the output.
 func BuildPackage(pkg Package, t PackageTarget) (string, error) {
-	SetTeamCityParameter("env.VERSION_NUMBER", version.Version.String())
+	SetTeamCityParameter("env.VERSION_NUMBER", pkg.Version.String())
 	var outDir string
 
 	env := map[string]string{
