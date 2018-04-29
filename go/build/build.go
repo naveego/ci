@@ -78,7 +78,6 @@ func init() {
 type Package struct {
 	Name        string
 	Version     semver.Version
-	CommitHash  string
 	PackagePath string
 	OutDir      string
 	DockerRepo  string
