@@ -136,7 +136,7 @@ func BuildPackages(pkg Package, targets ...PackageTarget) error {
 
 // BuildPackage builds a package and returns the path to the output.
 func BuildPackage(pkg Package, t PackageTarget) (string, error) {
-	SetTeamCityParameter("env.VERSION_NUMBER", pkg.Version.String())
+	SetTeamCityParameter("env.VERSION_NUMBER", "v"+pkg.Version.String())
 	var outDir string
 
 	env := map[string]string{
