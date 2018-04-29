@@ -20,7 +20,7 @@ func SetTeamCityBuildNumber(version, buildNumber string) {
 
 func SetTeamCityParameter(name, value string) {
 	if RunningOnTeamCity() {
-		fmt.Printf("##teamcity[setParameter name='%s' value='%s']", name, ciEscape(value))
+		fmt.Printf(`##teamcity[setParameter name='%s' value='%s']`, name, ciEscape(value))
 	}
 }
 
