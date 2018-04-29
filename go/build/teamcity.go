@@ -18,6 +18,12 @@ func SetTeamCityBuildNumber(version, buildNumber string) {
 	}
 }
 
+func SetTeamCityParameter(name, value string) {
+	if RunningOnTeamCity() {
+		fmt.Printf("##teamcity[setParameter name='%s' value='%s']", name, ciEscape(value))
+	}
+}
+
 // CIBuildProblem reports an error in a way TeamCity can understand.
 // If err is nil, this method does nothing.
 // This method returns the error to support chaining.
