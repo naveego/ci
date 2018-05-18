@@ -29,6 +29,7 @@ func RunUnitTests(tags []string) error {
 		"--cover",
 		"--trace",
 		"--race",
+		"-keepGoing",
 	}
 
 	if len(tags) > 0 {
@@ -57,7 +58,7 @@ func RunIntegrationTestsInDocker(name, dockerComposePath string) error {
 		return err
 	}
 
-	runCmd := exec.Command("docker-compose", "-p", name, "-f", dockerComposePath, "run", "sut", "ginkgo", "-tags", "integration", "-r", "--progress", "--randomizeAllSpecs", "--randomizeSuites", "--cover", "--trace", "--race")
+	runCmd := exec.Command("docker-compose", "-p", name, "-f", dockerComposePath, "run", "sut", "ginkgo", "-tags", "integration", "-r", "--progress", "--randomizeAllSpecs", "--randomizeSuites", "--cover", "--trace", "--race", "-keepGoing")
 	runCmd.Stdout = os.Stdout
 	runCmd.Stderr = os.Stderr
 
