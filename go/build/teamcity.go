@@ -5,7 +5,24 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"testing"
+
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
 )
+
+func RunSpecsWithReporting(t *testing.T, suiteName string) {
+
+	if os.Getenv("TEAMCITY_VERSION") != "" {
+		ginkgo.RunSpecsWithCustomReporters(t, suiteName,
+			[]ginkgo.Reporter{
+				reporters.NewTeamCityReporter(os.Stdout),
+			})
+		return
+	}
+
+	ginkgo.RunSpecs(t, suiteName)
+}
 
 func RunningOnTeamCity() bool {
 	_, ok := os.LookupEnv("TEAMCITY_VERSION")
