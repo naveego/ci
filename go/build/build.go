@@ -93,6 +93,7 @@ type Package struct {
 	Shrink      bool
 	Main        string // The path to main.go or build dir
 	BuildArgs   []string
+	CGOEnabled bool
 }
 
 // NewPackage creates a new package with default values configured.
@@ -165,8 +166,12 @@ func BuildPackage(pkg Package, t PackageTarget) (string, error) {
 	SetTeamCityParameter("env.VERSION_NUMBER", "v"+pkg.VersionString)
 	var outDir string
 
-	env := map[string]string{
-		"CGO_ENABLED": "0",
+	env := map[string]string{}
+
+	if pkg.CGOEnabled {
+		env["CGO_ENABLED"] = "1"
+	} else {
+		env["CGO_ENABLED"] = "0"
 	}
 
 	if t.OS != "" {
@@ -329,7 +334,7 @@ func BuildPlugin(cfg PluginConfig) error {
 	}
 
 	if pkg.OutTemplate == "" {
-		pkg.OutTemplate = fmt.Sprintf("build/outputs/{{.PackageTarget.OS}}/{{.PackageTarget.Arch}}/%s/{{.Package.VersionString}}/pub-csv{{if eq .PackageTarget.OS `windows`}}.exe{{end}}", cfg.Package.Name)
+		pkg.OutTemplate = fmt.Sprintf("build/outputs/{{.PackageTarget.OS}}/{{.PackageTarget.Arch}}/%s/{{.Package.VersionString}}/%s{{if eq .PackageTarget.OS `windows`}}.exe{{end}}", cfg.Package.Name, cfg.Package.Name)
 	}
 
 	for _, target := range cfg.Targets {
