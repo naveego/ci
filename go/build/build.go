@@ -4,13 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"text/template"
 
 	"github.com/coreos/go-semver/semver"
@@ -394,12 +394,15 @@ func BuildPlugin(cfg PluginConfig) error {
 	return err
 }
 
-var goBetweenInstaller = new(sync.Once)
 func ensureGoBetweenInstalled() error {
-	var err error
-	goBetweenInstaller.Do(func(){
-		err = sh.Run("go", "install", "github.com/naveegoinc/go-between/cmd/between")
-	})
 
-	return err
+	exe, err := exec.LookPath("between")
+	if err != nil {
+		return err
+	}
+	if exe == "" {
+		return errors.New("you need to run go install github.com/naveegoinc/go-between/cmd/between")
+	}
+
+	return nil
 }
