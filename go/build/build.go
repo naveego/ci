@@ -105,7 +105,7 @@ func NewPackage(name string, version semver.Version) Package {
 		Version:     version,
 		PackagePath: "github.com/naveegoinc/" + name,
 		OutDir:      "./bin",
-		DockerRepo:  "docker.naveego.com:4333",
+		DockerRepo:  "docker.n5o.black/private",
 		Main:        "main.go",
 	}
 }
